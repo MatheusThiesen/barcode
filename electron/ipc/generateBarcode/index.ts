@@ -120,11 +120,13 @@ interface BarcodeResponse extends BarcodeRecive {
   situação: string
 }
 
-const baseUrl = process.env.GS1_BASE_URL || ''
-const clientId = process.env.GS1_CLIENT_ID || ''
-const clientSecret = process.env.GS1_CLIENT_SECRET || ''
-const username = process.env.GS1_USERNAME || ''
-const password = process.env.GS1_PASSWORD || ''
+const baseUrl = process.env.GS1_BASE_URL || 'https://api.gs1br.org'
+const clientId =
+  process.env.GS1_CLIENT_ID || 'e0c36525-9537-3e85-a09e-8b6ab86cc210'
+const clientSecret =
+  process.env.GS1_CLIENT_SECRET || '73e0410f-fa54-320b-a994-d94797bc01c2'
+const username = process.env.GS1_USERNAME || 'matheus.reis@alpardobrasil.com.br'
+const password = process.env.GS1_PASSWORD || 'Rapla@1000.'
 
 async function normilized(pathFile: string) {
   const fileXLSX = XLSX.readFile(path.resolve(pathFile), {

@@ -7,7 +7,7 @@ const screen: React.FC = () => {
   return (
     <Container>
       <Content>
-        <h1>GERADOR DE CATÁLAGO</h1>
+        <h1>Gerador de Código de barras</h1>
         <GenerateCatalog />
       </Content>
     </Container>

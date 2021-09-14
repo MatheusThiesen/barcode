@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import {
   app,
   BrowserWindow,
@@ -12,6 +14,7 @@ import { autoUpdater } from 'electron-updater'
 import * as path from 'path'
 import * as url from 'url'
 import { writeFile } from './ipc/genarateCaralog'
+import * as generateBarcode from './ipc/generateBarcode'
 import { selectDirectory } from './ipc/selectDirectory'
 
 import i18n from '../i18n'
@@ -155,6 +158,12 @@ async function registerListeners() {
     } catch (error) {
       event.returnValue = { error: true, description: error }
     }
+  })
+
+  ipcMain.on('generate-barcode', async (event, props) => {
+    await generateBarcode.handle(props)
+
+    event.reply('generated-barcode', true)
   })
 }
 

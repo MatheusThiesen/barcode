@@ -4,8 +4,8 @@ export const defaultTheme = {
   colors: {
     white: '#E1E1E6',
     grey: shade(0.3, '#E1E1E6'),
-    opaqueShade: shade(-0.4, '#364958'),
-    opaque: '#364958',
+    opaqueShade: shade(-0.4, '#333'),
+    opaque: '#333',
     purple: '#6633cc',
     purpleDark: '#5A4B81',
     green: '#67e480',
@@ -23,7 +23,7 @@ export const defaultTheme = {
     // darker: '#15121E',
     // darkest: '#13111B'
 
-    darker: '#364958',
+    darker: '#333',
     lighter: '#f7fcfc',
     light: '#fff'
   }

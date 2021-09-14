@@ -19,12 +19,6 @@ interface NormalizedDataProps {
   pathFile: string
 }
 
-interface CoresProps {
-  tipo: number
-  cor: string
-  filename: string
-}
-
 interface CatalogoReciveProps {
   pagina: string
   tipo: string

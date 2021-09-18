@@ -96,7 +96,7 @@ interface AuthRecive {
   client_id: string
 }
 
-interface ReponseBarcode {
+export interface ReponseBarcode {
   result: string
   product: {
     gtinStatusCode: string
@@ -108,27 +108,27 @@ interface ReponseBarcode {
   validations: never[]
 }
 
-interface ReponseBarcodeError {
+export interface ReponseBarcodeError {
   statusCode: number
   error: string
   message: string
 }
 
-interface BarcodeResponse extends BarcodeRecive {
+export interface BarcodeResponse extends BarcodeRecive {
   ean: string
   observação: string
   situação: string
 }
 
 const baseUrl = process.env.GS1_BASE_URL || 'https://api.gs1br.org'
-const clientId =
+export const clientId =
   process.env.GS1_CLIENT_ID || 'e0c36525-9537-3e85-a09e-8b6ab86cc210'
 const clientSecret =
   process.env.GS1_CLIENT_SECRET || '73e0410f-fa54-320b-a994-d94797bc01c2'
 const username = process.env.GS1_USERNAME || 'matheus.reis@alpardobrasil.com.br'
 const password = process.env.GS1_PASSWORD || 'Rapla@1000.'
 
-async function normilized(pathFile: string) {
+export async function normilized(pathFile: string) {
   const fileXLSX = XLSX.readFile(path.resolve(pathFile), {
     cellDates: true
   })
@@ -138,7 +138,7 @@ async function normilized(pathFile: string) {
   return data
 }
 
-async function authentication(): Promise<AxiosResponse<Authentication>> {
+export async function authentication(): Promise<AxiosResponse<Authentication>> {
   const AuthRequest = Axios({
     method: 'post',
     url: `${baseUrl}/oauth/access-token`,
@@ -165,7 +165,7 @@ async function authentication(): Promise<AxiosResponse<Authentication>> {
   })
 }
 
-async function generateBarcode(
+export async function generateBarcode(
   barcode: BarcodeRecive,
   auth: AuthRecive
 ): Promise<AxiosResponse<ReponseBarcode | ReponseBarcodeError | undefined>> {
@@ -269,15 +269,32 @@ async function generateBarcode(
     }
   }
 
-  const Request = Axios({
-    method: 'POST',
-    url: `${baseUrl}/gs1/v0/products`,
-    headers: {
-      ['Content-Type']: 'application/json',
-      ['client_id']: auth.client_id,
-      ['access_token']: auth.access_token
-    },
-    data: data
+  // const Request = Axios({
+  //   method: 'POST',
+  //   url: `${baseUrl}/gs1/v0/products`,
+  //   headers: {
+  //     ['Content-Type']: 'application/json',
+  //     ['client_id']: auth.client_id,
+  //     ['access_token']: auth.access_token
+  //   },
+  //   data: data
+  // })
+
+  const Request = new Promise<any>((resolve, _reject) => {
+    setTimeout(() => {
+      const response = {
+        data: {
+          product: {
+            gs1TradeItemIdentificationKey: {
+              gs1TradeItemIdentificationKeyCode: '',
+              gtin: '987654321'
+            },
+            gtinStatusCode: 'ACTIVE'
+          }
+        }
+      }
+      resolve(response)
+    }, 1800)
   })
 
   return new Promise<any>((resolve, reject) => {
@@ -287,6 +304,23 @@ async function generateBarcode(
       reject(reponse)
     })
   })
+}
+
+export async function generateFile(path: string | undefined, data: any[]) {
+  const newFile = XLSX.utils.book_new()
+  const newAba = XLSX.utils.json_to_sheet(data)
+  XLSX.utils.book_append_sheet(newFile, newAba, 'Plan1')
+
+  if (path !== undefined) {
+    const split = path.split('.')
+    const nameFile =
+      split[split.length - 1].toUpperCase() !== 'XLS' ? path + '.xls' : path
+
+    XLSX.writeFile(newFile, nameFile)
+    setTimeout(() => {
+      shell.showItemInFolder(nameFile)
+    }, 500)
+  }
 }
 
 export async function handle(file: string) {
@@ -302,6 +336,7 @@ export async function handle(file: string) {
           access_token: auth.data.access_token,
           client_id: clientId
         })
+
         const { product } = responseSuccess.data as ReponseBarcode
         const newBarcode: BarcodeResponse = {
           situação: product.gtinStatusCode,
@@ -311,8 +346,8 @@ export async function handle(file: string) {
         }
 
         responseData.push(newBarcode)
-      } catch (err) {
-        console.log(err)
+      } catch (error) {
+        const err = error as any
 
         if (err && err.response && err.response.data) {
           const { message } = err.response.data as ReponseBarcodeError
@@ -344,24 +379,7 @@ export async function handle(file: string) {
       }
     )
 
-    console.log(responseData)
-
-    const newFile = XLSX.utils.book_new()
-    const newAba = XLSX.utils.json_to_sheet(responseData)
-    XLSX.utils.book_append_sheet(newFile, newAba, 'Plan1')
-
-    if (resultFilePath !== undefined) {
-      const split = resultFilePath.split('.')
-      const nameFile =
-        split[split.length - 1].toUpperCase() !== 'XLS'
-          ? resultFilePath + '.xls'
-          : resultFilePath
-
-      XLSX.writeFile(newFile, nameFile)
-      setTimeout(() => {
-        shell.showItemInFolder(nameFile)
-      }, 1000)
-    }
+    await generateFile(resultFilePath, responseData)
   } catch (error) {
     console.log(error)
     return { message: 'Erro na autenticação', error: true }

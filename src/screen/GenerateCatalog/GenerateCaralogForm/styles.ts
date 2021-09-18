@@ -179,3 +179,11 @@ export const DownloadFile = styled.nav`
     font-weight: 500;
   }
 `
+export const ContainerLoading = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin-top: 12px;
+  font-weight: bold;
+`

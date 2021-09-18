@@ -1,6 +1,8 @@
 import styled from 'styled-components'
 
 export const Spinner = styled.div`
+  position: relative;
+
   height: 25px;
   width: 25px;
 

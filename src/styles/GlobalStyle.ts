@@ -66,7 +66,7 @@ export const GlobalStyle = createGlobalStyle`
     /* width: 500px; */
     background: rgba(0, 0, 0, 0.8);
     border: 1px solid ${props => props.theme.colors.opaque};
-    padding: 16px;
+    /* padding: 16px; */
     border-radius: 4px;
     box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
 

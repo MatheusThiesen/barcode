@@ -16,18 +16,21 @@ import {
   ActionsContainer,
   ContainerDropZone,
   ContainerPreviews,
-  ErrorDropzone
+  ErrorDropzone,
+  ContainerLoading
 } from './styles'
 
 const GenerateCaralogForm: React.FC = () => {
   const { addToast } = useToast()
 
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(0)
   const [fileError, setFileError] = useState(false)
   const [file, setFile] = useState<File | undefined>()
 
   const handleCreateOrUpdateConnection = async () => {
     try {
+      setLoading(true)
       if (!file) {
         setFileError(true)
         return
@@ -35,13 +38,28 @@ const GenerateCaralogForm: React.FC = () => {
 
       ipcRenderer.send('generate-barcode', file.path)
 
-      addToast({
-        type: 'success',
-        title: 'Gerado com sucesso',
-        description: ''
-      })
-      setLoading(false)
-      setFile(undefined)
+      ipcRenderer.on(
+        'generated-barcode',
+        (
+          _event,
+          arg: { total: number; progress: number; finished: boolean }
+        ) => {
+          const progressCalc = Math.round(
+            Number((arg.progress / arg.total) * 100)
+          )
+          setProgress(isNaN(progressCalc) ? 0 : progressCalc)
+
+          if (!isNaN(progressCalc) && arg.progress === arg.total) {
+            addToast({
+              type: 'success',
+              title: 'Gerado com sucesso',
+              description: ''
+            })
+            setLoading(false)
+            setFile(undefined)
+          }
+        }
+      )
     } catch (err) {
       console.log(err)
 
@@ -126,11 +144,15 @@ const GenerateCaralogForm: React.FC = () => {
       {loading && (
         <Modal visible={true} isClose={true}>
           <Loading
-            size={40}
+            size={45}
             borderSize={3}
             colorLoading="rgba(255,255,255)"
             borderColor="rgba(255,255,255, 0.3)"
           />
+
+          <ContainerLoading>
+            <span>{progress}%</span>
+          </ContainerLoading>
         </Modal>
       )}
     </>

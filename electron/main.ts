@@ -161,9 +161,80 @@ async function registerListeners() {
   })
 
   ipcMain.on('generate-barcode', async (event, props) => {
-    await generateBarcode.handle(props)
+    const {
+      authentication,
+      normilized,
+      generateFile,
+      generateBarcode: generateBarcodeFunc,
+      clientId
+    } = generateBarcode
 
-    event.reply('generated-barcode', true)
+    const auth = await authentication()
+    const normilizedData = await normilized(props)
+
+    var responseData: generateBarcode.BarcodeResponse[] = []
+
+    for (const item of normilizedData) {
+      try {
+        const responseSuccess = await generateBarcodeFunc(item, {
+          access_token: auth.data.access_token,
+          client_id: clientId
+        })
+
+        const {
+          product
+        } = responseSuccess.data as generateBarcode.ReponseBarcode
+        const newBarcode: generateBarcode.BarcodeResponse = {
+          situação: product.gtinStatusCode,
+          ean: product.gs1TradeItemIdentificationKey.gtin,
+          ...item,
+          observação: ''
+        }
+
+        responseData.push(newBarcode)
+      } catch (error) {
+        const err = error as any
+
+        if (err && err.response && err.response.data) {
+          const { message } = err.response
+            .data as generateBarcode.ReponseBarcodeError
+          const newBarcode: generateBarcode.BarcodeResponse = {
+            situação: 'ERRO',
+            ean: '',
+            ...item,
+            observação: message
+          }
+
+          responseData.push(newBarcode)
+        } else {
+          const newBarcode: generateBarcode.BarcodeResponse = {
+            situação: 'ERRO',
+            ean: '',
+            ...item,
+            observação: 'Error'
+          }
+
+          responseData.push(newBarcode)
+        }
+      }
+
+      event.reply('generated-barcode', {
+        total: normilizedData.length,
+        progress: responseData.length,
+        finished: normilizedData.length === responseData.length ? true : false
+      })
+    }
+
+    const resultFilePath = dialog.showSaveDialogSync(
+      mainWindow as Electron.BrowserWindow,
+      {
+        filters: [{ name: '', extensions: ['xls'] }]
+      }
+    )
+
+    generateFile(resultFilePath, responseData)
+
+    event.reply('generated-barcode', { finished: true })
   })
 }
 

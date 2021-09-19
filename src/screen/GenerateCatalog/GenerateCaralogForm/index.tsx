@@ -42,7 +42,12 @@ const GenerateCaralogForm: React.FC = () => {
         'generated-barcode',
         (
           _event,
-          arg: { total: number; progress: number; finished: boolean }
+          arg: {
+            total: number
+            progress: number
+            finished: boolean
+            description: string
+          }
         ) => {
           const progressCalc = Math.round(
             Number((arg.progress / arg.total) * 100)

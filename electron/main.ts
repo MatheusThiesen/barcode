@@ -194,6 +194,7 @@ async function registerListeners() {
         responseData.push(newBarcode)
       } catch (error) {
         const err = error as any
+        console.log(error)
 
         if (err && err.response && err.response.data) {
           const { message } = err.response
@@ -221,7 +222,8 @@ async function registerListeners() {
       event.reply('generated-barcode', {
         total: normilizedData.length,
         progress: responseData.length,
-        finished: normilizedData.length === responseData.length ? true : false
+        finished: normilizedData.length === responseData.length ? true : false,
+        description: item.descricao
       })
     }
 

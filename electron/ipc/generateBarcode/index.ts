@@ -269,38 +269,41 @@ export async function generateBarcode(
     }
   }
 
-  // const Request = Axios({
-  //   method: 'POST',
-  //   url: `${baseUrl}/gs1/v0/products`,
-  //   headers: {
-  //     ['Content-Type']: 'application/json',
-  //     ['client_id']: auth.client_id,
-  //     ['access_token']: auth.access_token
-  //   },
-  //   data: data
-  // })
-
-  const Request = new Promise<any>((resolve, _reject) => {
-    setTimeout(() => {
-      const response = {
-        data: {
-          product: {
-            gs1TradeItemIdentificationKey: {
-              gs1TradeItemIdentificationKeyCode: '',
-              gtin: '987654321'
-            },
-            gtinStatusCode: 'ACTIVE'
+  const test = false
+  const Request = test
+    ? new Promise<any>((resolve, _reject) => {
+        setTimeout(() => {
+          const response = {
+            data: {
+              product: {
+                gs1TradeItemIdentificationKey: {
+                  gs1TradeItemIdentificationKeyCode: '',
+                  gtin: '987654321'
+                },
+                gtinStatusCode: 'ACTIVE'
+              }
+            }
           }
-        }
-      }
-      resolve(response)
-    }, 1800)
-  })
+          resolve(response)
+        }, 1800)
+      })
+    : Axios({
+        method: 'POST',
+        url: `${baseUrl}/gs1/v0/products`,
+        headers: {
+          ['Content-Type']: 'application/json',
+          ['client_id']: auth.client_id,
+          ['access_token']: auth.access_token
+        },
+        data: data
+      })
 
   return new Promise<any>((resolve, reject) => {
     Request.then(reponse => {
+      console.log(reponse)
       resolve(reponse)
     }).catch(reponse => {
+      console.log(reponse)
       reject(reponse)
     })
   })
